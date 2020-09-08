@@ -5,6 +5,8 @@ namespace SimpleUndimNeuralNetworkYlem
 {
 	class NeuralNetwork
 	{
+		friend std::ostream& operator<<(std::ostream &, NeuralNetwork &);
+		friend std::istream& operator>>(std::istream &, NeuralNetwork &);
 	public:
 		NeuralNetwork();
 		NeuralNetwork(int LayersCount, int * NeuronsByLayer, int InputsPerFirstLayerNeurons, ActivationFuncs::Funcs * ActivationsByLayers, double learningRate, double momentum, double decay);
@@ -16,6 +18,7 @@ namespace SimpleUndimNeuralNetworkYlem
 		void UpdateWeights(double *);
 		
 		double * GetOutputs(void) const;
+
 
 		NeuronsLayer * * Layers_ = NULL;
 	private:

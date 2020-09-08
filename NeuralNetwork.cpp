@@ -1,4 +1,5 @@
 #include "NeuralNetwork.h"
+#include <fstream>
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -82,4 +83,30 @@ void SimpleUndimNeuralNetworkYlem::NeuralNetwork::UpdateWeights(double * Inputs)
 double * SimpleUndimNeuralNetworkYlem::NeuralNetwork::GetOutputs(void) const
 {
 	return Layers_[layersCount_ - 1]->GetNeuronsOutputs();
+}
+
+std::ostream & SimpleUndimNeuralNetworkYlem::operator<<(std::ostream & dst, SimpleUndimNeuralNetworkYlem::NeuralNetwork &src)
+{
+	dst << src.layersCount_ << std::endl;
+	for (int i = 0; i < src.layersCount_; i++)
+		dst << *src.Layers_[i];
+	return dst;
+}
+
+std::istream & SimpleUndimNeuralNetworkYlem::operator>>(std::istream & src, SimpleUndimNeuralNetworkYlem::NeuralNetwork &dst)
+{
+
+	for (int i = 0; i < dst.layersCount_; i++)
+		delete dst.Layers_[i];
+	src >> dst.layersCount_;
+	delete[] dst.Layers_;
+
+	dst.Layers_ = new NeuronsLayer*[dst.layersCount_];
+	for (int i = 0; i < dst.layersCount_; i++)
+	{
+		NeuronsLayer *nl = new NeuronsLayer;
+		src >> *nl;
+		dst.Layers_[i] = nl;
+	}
+	return src;
 }

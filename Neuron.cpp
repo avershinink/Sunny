@@ -1,26 +1,26 @@
 #include "Neuron.h"
 #include <iostream>
 
+namespace Sunny = SimpleUndimNeuralNetworkYlem;
 
-
-SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
+Sunny::Neuron::Neuron(const Neuron & rhs)
 {
 	//std::cout << "Neuron --> Copy Constructor running from " << &(rhs) << " to " << &(*this) << std::endl;
 	Copy(rhs);
 }
 
-	SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron * rhs)
+	Sunny::Neuron::Neuron(const Neuron * rhs)
 	{
 		//std::cout << "Neuron --> from Neuron Pointer" << std::endl;
 		Copy(*rhs);
 	}
 
-	SimpleUndimNeuralNetworkYlem::Neuron::Neuron(void)
+	Sunny::Neuron::Neuron(void)
 	{
 		//std::cout << "Neuron --> Default constructer " << &(*this) << std::endl;
 	}
 
-	SimpleUndimNeuralNetworkYlem::Neuron::Neuron(int inputsCount, double learningRate, double momentum, double decay) :
+	Sunny::Neuron::Neuron(int inputsCount, double learningRate, double momentum, double decay) :
 		inputsCount_(inputsCount),
 		learningRate_(learningRate),
 		momentum_(momentum),
@@ -29,29 +29,28 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		Init();
 	}
 
-	SimpleUndimNeuralNetworkYlem::Neuron::Neuron(int inputsCount, double learningRate, double momentum, double decay, NeuronFunc ActivationFunc, NeuronFunc ActivationDerivativeFunc) :
+	Sunny::Neuron::Neuron(int inputsCount, double learningRate, double momentum, double decay, Sunny::ActivationFuncs::Funcs UseActivation) :
 		inputsCount_(inputsCount),
 		learningRate_(learningRate),
 		momentum_(momentum),
-		decay_(decay)
+		decay_(decay),
+		activationFuncEnum_(UseActivation)
 	{
-		//std::cout << "Neuron --> Parametrized constructor " << &(*this) << std::endl;
-		Init();
-		this->ActivationFunc = ActivationFunc;
-		this->ActivationDerivativeFunc = ActivationDerivativeFunc;
-	}
 
-	SimpleUndimNeuralNetworkYlem::Neuron::~Neuron()
+
+		Init();
+	}
+	
+	Sunny::Neuron::~Neuron()
 	{
 		//std::cout << "Neuron -->Destructing " << &(*this) << std::endl;
 		delete[] weights_;
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::Init()
+	void Sunny::Neuron::Init()
 	{
 
-		ActivationFunc = NULL;
-		ActivationDerivativeFunc = NULL;
+		Sunny::ActivationFuncs::SetActivationFunction(activationFuncEnum_, ActivationFunc, ActivationDerivativeFunc);
 
 		InitWeights();
 
@@ -65,7 +64,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		activation_ = 0;
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::Feed(double* inputs)
+	void Sunny::Neuron::Feed(double* inputs)
 	{
 		net_sum_ = 0;
 		for (int i = 0; i < inputsCount_; i++)
@@ -77,7 +76,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 			activation_ = ActivationFunc(net_sum_);
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::InitWeights(void)
+	void Sunny::Neuron::InitWeights(void)
 	{
 		weights_ = new double[inputsCount_];
 
@@ -87,7 +86,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 	}
 
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::BackPropagate(double targetOutput)
+	void Sunny::Neuron::BackPropagate(double targetOutput)
 	{
 		if (ActivationDerivativeFunc)
 		{
@@ -97,7 +96,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		}
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::UpdateWeights(double* inputs)
+	void Sunny::Neuron::UpdateWeights(double* inputs)
 	{
 		double learningDelta = 0.0;
 		double biasLearningDelta = 0.0;
@@ -117,12 +116,30 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		}
 	}
 
-	double SimpleUndimNeuralNetworkYlem::Neuron::GetActivation(void) const
+	double Sunny::Neuron::GetActivation(void) const
 	{
 		return activation_;
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::PrintWeights(std::ostream &DstStream) const
+	void SimpleUndimNeuralNetworkYlem::Neuron::ShowInfo(std::ostream & dst) const
+	{
+		dst << std::endl;
+		dst << "================ NEURON ================" << std::endl;
+		dst << "\tBias = " << this->bias_ << std::endl;
+		dst << "\t\tbiasDelta_ = " << this->biasDelta_ << std::endl;
+		dst << "\t\tbiasPrevDelta_ = " << this->biasPrevDelta_ << std::endl;
+
+		//dst << "\tWeights: " << std::endl;
+		//dst << "\t\t";
+		this->PrintWeights(dst);
+
+		dst << "\tDelta = " << this->delta_ << std::endl;
+		dst << "\tPrev Delta = " << this->prevDelta_ << std::endl;
+		dst << "\tACTIVATION = " << this->activation_ << std::endl;
+		dst << "========================================" << std::endl;
+	}
+
+	void Sunny::Neuron::PrintWeights(std::ostream &DstStream) const
 	{
 		DstStream << "[ " << weights_[0];
 		for (int i = 1; i < inputsCount_; i++)
@@ -130,7 +147,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		DstStream << "]" << std::endl;
 	}
 
-	void SimpleUndimNeuralNetworkYlem::Neuron::Copy(const Neuron & src)
+	void Sunny::Neuron::Copy(const Neuron & src)
 	{
 		inputsCount_ = src.inputsCount_;
 
@@ -158,7 +175,7 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		ActivationDerivativeFunc = src.ActivationDerivativeFunc;
 	}
 
-	SimpleUndimNeuralNetworkYlem::Neuron & SimpleUndimNeuralNetworkYlem::Neuron::operator=(const Neuron & rhs)
+	Sunny::Neuron & Sunny::Neuron::operator=(const Neuron & rhs)
 	{
 		std::cout << "Neuron --> Operator= running" << std::endl;
 		if (this == &rhs)
@@ -169,21 +186,41 @@ SimpleUndimNeuralNetworkYlem::Neuron::Neuron(const Neuron & rhs)
 		return *this;
 	}
 
-	std::ostream& SimpleUndimNeuralNetworkYlem::operator<<(std::ostream &DstStream, Neuron &PrjNeuron)
+	std::ostream& Sunny::operator<<(std::ostream &DstStream, Neuron &PrjNeuron)
 	{
+		DstStream << PrjNeuron.activationFuncEnum_ << " ";
+		DstStream << PrjNeuron.bias_ << " ";
+		DstStream << PrjNeuron.biasWeight_ << " ";
+		DstStream << PrjNeuron.learningRate_ << " ";
+		DstStream << PrjNeuron.momentum_ << " ";
+		DstStream << PrjNeuron.decay_ << " ";
+		DstStream << PrjNeuron.inputsCount_ << std::endl;
+		for (int i = 0; i < PrjNeuron.inputsCount_; i++)
+			DstStream << PrjNeuron.weights_[i] << " ";
 		DstStream << std::endl;
-		DstStream << "================ NEURON ================" << std::endl;
-		DstStream << "\tBias = " << PrjNeuron.bias_ << std::endl;
-		DstStream << "\t\tbiasDelta_ = " << PrjNeuron.biasDelta_ << std::endl;
-		DstStream << "\t\tbiasPrevDelta_ = " << PrjNeuron.biasPrevDelta_ << std::endl;
 
-		//DstStream << "\tWeights: " << std::endl;
-		//DstStream << "\t\t";
-		//PrjNeuron.PrintWeights(DstStream);
-
-		DstStream << "\tDelta = " << PrjNeuron.delta_ << std::endl;
-		DstStream << "\tPrev Delta = " << PrjNeuron.prevDelta_ << std::endl;
-		DstStream << "\tACTIVATION = " << PrjNeuron.activation_ << std::endl;
-		DstStream << "========================================" << std::endl;
 		return DstStream;
 	}
+
+	std::istream& Sunny::operator>>(std::istream& src, Sunny::Neuron& dst)
+	{
+		// set activation function and derivative
+		int func = 0;
+		src >> func;
+		ActivationFuncs::Funcs f = Sunny::ActivationFuncs::IntToFuncs(func);
+		ActivationFuncs::SetActivationFunction(f, dst.ActivationFunc, dst.ActivationDerivativeFunc);
+
+		src >> dst.bias_;
+		src >> dst.biasWeight_;
+		src >> dst.learningRate_;
+		src >> dst.momentum_;
+		src >> dst.decay_;
+		src >> dst.inputsCount_;
+
+		delete[] dst.weights_;
+		dst.weights_ = new double[dst.inputsCount_];
+		for(int i = 0; i < dst.inputsCount_; i++)
+			src >> dst.weights_[i];
+		return src;
+	}
+

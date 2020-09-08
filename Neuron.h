@@ -1,15 +1,14 @@
-
 #include <iostream>
+#include "ActivationFuncs.h"
 
 namespace SimpleUndimNeuralNetworkYlem
 {
-
-		typedef double(*NeuronFunc) (double);
 		class Neuron
 		{
 			friend class NeuronsLayer;
 			friend class NeuralNetwork;
 			friend std::ostream& operator<<(std::ostream&, Neuron&);
+			friend std::istream& operator>>(std::istream&, Neuron&);
 		public:
 			
 
@@ -26,9 +25,8 @@ namespace SimpleUndimNeuralNetworkYlem
 			//@parem2<double> -- learningRate
 			//@parem3<double> -- momentum
 			//@parem4<double> -- decay
-			//@parem5<Func> -- Activation function
-			//@parem6<Func> -- Derivative of the activation function 
-			Neuron(int, double, double, double, NeuronFunc, NeuronFunc);
+			//@parem5<Funcs> -- Activation/Derivative function
+			Neuron(int inputsCount, double learningRate, double momentum, double decay, SimpleUndimNeuralNetworkYlem::ActivationFuncs::Funcs UseActivation);
 
 			// Neuron copy constructor
 			Neuron(const Neuron &);
@@ -56,6 +54,9 @@ namespace SimpleUndimNeuralNetworkYlem
 			//Returns current output of the neuron
 			double GetActivation(void) const;
 
+			//Print neuron telemetry
+			void ShowInfo(std::ostream & dst) const;
+
 			//Copy assignment operator
 			Neuron & operator=(const Neuron &);
 
@@ -79,8 +80,9 @@ namespace SimpleUndimNeuralNetworkYlem
 			double delta_;
 			double prevDelta_;
 
-			NeuronFunc ActivationFunc;
-			NeuronFunc ActivationDerivativeFunc;
+			ActivationFuncs::NeuronFunc ActivationFunc;
+			ActivationFuncs::NeuronFunc ActivationDerivativeFunc;
+			ActivationFuncs::Funcs activationFuncEnum_;
 
 			void Init();
 			void PrintWeights(std::ostream &) const;

@@ -4,6 +4,7 @@ namespace SimpleUndimNeuralNetworkYlem
 {
 	namespace ActivationFuncs
 	{
+		typedef double(*NeuronFunc) (double);
 		enum Funcs
 		{
 			NONE,
@@ -14,6 +15,10 @@ namespace SimpleUndimNeuralNetworkYlem
 			HyperbolicTangentFunc,
 			SoftMaxFunc
 		};
+
+		Funcs IntToFuncs(int funcInt);
+
+		void SetActivationFunction(SimpleUndimNeuralNetworkYlem::ActivationFuncs::Funcs ActivationEnum, NeuronFunc &Act, NeuronFunc &ActDer, bool isNeuron = true);
 
 		double Identity(double value);
 		double IdentityDerivative(double value);
@@ -38,5 +43,6 @@ namespace SimpleUndimNeuralNetworkYlem
 
 		double SoftMax(double value, double netMax, double scale);
 		double SoftMaxDerivative(double value);
+
 	}
 }

@@ -9,39 +9,12 @@ Sunny::NeuronsLayer::NeuronsLayer(int NeuronsCount, int InputsPerNeuronCount, do
 	InputsPerNeuronCount_(InputsPerNeuronCount),
 	LayerCommonFunc_(UseActivation)
 {
+
+	ActivationFuncs::SetActivationFunction(UseActivation, ActFunc_, ActDerFunc_);
 	Neurons_ = new Neuron*[NeuronsCount_];
-	NeuronFunc Act = NULL;
-	NeuronFunc Der = NULL;
-	switch (LayerCommonFunc_)
-	{
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::IdentityFunc:
-		Act = ActivationFuncs::Identity;
-		Der = ActivationFuncs::IdentityDerivative;
-		break;
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::SigmoidFunc:
-		Act = ActivationFuncs::Sigmoid;
-		Der = ActivationFuncs::SigmoidDerivative;
-		break;
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::ReLUFunc:
-		Act = ActivationFuncs::ReLU;
-		Der = ActivationFuncs::ReLUDerivative;
-		break;
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::PReLUFunc:
-		Act = ActivationFuncs::PReLU;
-		Der = ActivationFuncs::PReLUDerivative;
-		break;
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::HyperbolicTangentFunc:
-		Act = ActivationFuncs::HyperbolicTangent;
-		Der = ActivationFuncs::HyperbolicTangentDerivative;
-		break;
-	case SimpleUndimNeuralNetworkYlem::ActivationFuncs::SoftMaxFunc:
-		// Act -- NULL this is layer level function
-		Der = ActivationFuncs::SoftMaxDerivative;
-		break;
-	}
 
 	for (int i = 0; i < NeuronsCount_; i++)
-		Neurons_[i] = new Neuron(InputsPerNeuronCount_, LearningRate, Momentum, Decay, Act, Der);
+		Neurons_[i] = new Neuron(InputsPerNeuronCount_, LearningRate, Momentum, Decay, LayerCommonFunc_);
 	
 }
 
@@ -127,13 +100,45 @@ double * SimpleUndimNeuralNetworkYlem::NeuronsLayer::GetNeuronsOutputs(void)
 	return outs;
 }
 
+void SimpleUndimNeuralNetworkYlem::NeuronsLayer::ShowInfo(std::ostream& dst) const
+{
+	dst << "[ " << this->Neurons_[0]->GetActivation();
+	for (int i = 1; i < this->NeuronsCount_; i++)
+		dst << ", " << this->Neurons_[i]->GetActivation();
+	dst << " ]" << std::endl;
+	this->Neurons_[0]->ShowInfo(dst);
+}
 
 std::ostream & Sunny::operator<<(std::ostream & DstStream, NeuronsLayer &prjNeuronLayer)
 {
-	DstStream << "[ " << prjNeuronLayer.Neurons_[0]->GetActivation();
-	for (int i = 1; i < prjNeuronLayer.NeuronsCount_; i++)
-		DstStream << ", " << prjNeuronLayer.Neurons_[i]->GetActivation();
-	DstStream << " ]" << std::endl;
-	DstStream << * prjNeuronLayer.Neurons_[0];
+	DstStream << prjNeuronLayer.LayerCommonFunc_ << " ";
+	DstStream << prjNeuronLayer.InputsPerNeuronCount_ << " ";
+	DstStream << prjNeuronLayer.NeuronsCount_ << std::endl;
+	for (int i = 0; i < prjNeuronLayer.NeuronsCount_; i++)
+		DstStream << *prjNeuronLayer.Neurons_[i];
+	DstStream << std::endl;
 	return DstStream;
+}
+
+std::istream & Sunny::operator>>(std::istream &src, NeuronsLayer &dst)
+{
+	int func = 0;
+	src >> func;
+	dst.LayerCommonFunc_ = ActivationFuncs::IntToFuncs(func);
+	ActivationFuncs::SetActivationFunction(dst.LayerCommonFunc_, dst.ActFunc_, dst.ActDerFunc_);
+	src >> dst.InputsPerNeuronCount_;
+
+	for (int i = 0; i < dst.NeuronsCount_; i++)
+		delete dst.Neurons_[i];
+	src >> dst.NeuronsCount_;
+	delete[] dst.Neurons_;
+
+	dst.Neurons_ = new Neuron*[dst.NeuronsCount_];
+	for (int i = 0; i < dst.NeuronsCount_; i++)
+	{
+		Neuron * n = new Neuron;
+		src >> *n;
+		dst.Neurons_[i] = n;
+	}
+	return src;
 }
