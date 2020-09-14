@@ -22,7 +22,7 @@ namespace SimpleUndimNeuralNetworkYlem
 		void UpdateNeurons(double *);
 		void ShowInfo(std::ostream & dst) const;
 
-		double * GetNeuronsOutputs(void);
+		void GetNeuronsOutputs(double* &);
 		int NeuronsCount_ = 0;
 
 	private:

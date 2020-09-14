@@ -92,12 +92,11 @@ void Sunny::NeuronsLayer::UpdateNeurons(double * inputs)
 		Neurons_[i]->UpdateWeights(inputs);
 }
 
-double * SimpleUndimNeuralNetworkYlem::NeuronsLayer::GetNeuronsOutputs(void)
+void SimpleUndimNeuralNetworkYlem::NeuronsLayer::GetNeuronsOutputs(double* & outs)
 {
-	double * outs = new double[NeuronsCount_];
+	//double * outs = new double[NeuronsCount_];
 	for (int i = 0; i < NeuronsCount_; i++)
 		outs[i] = Neurons_[i]->activation_;
-	return outs;
 }
 
 void SimpleUndimNeuralNetworkYlem::NeuronsLayer::ShowInfo(std::ostream& dst) const

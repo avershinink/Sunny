@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include "NeuronsLayer.h"
 
 namespace SimpleUndimNeuralNetworkYlem
@@ -13,16 +14,27 @@ namespace SimpleUndimNeuralNetworkYlem
 		NeuralNetwork(int LayersCount, int * NeuronsByLayer, int InputsPerFirstLayerNeurons, SimpleUndimNeuralNetworkYlem::ActivationFuncs::Funcs *ActivationsByLayers, double * learningRates, double * momentums, double * decays);
 		~NeuralNetwork();
 
+		void Train(int Epochs, double targetAccuracy, std::istream & InputsOutputs, std::istream & TestingInputsOutputs);
+		double Accuracy(std::istream & Inputs);
+
 		void Feed(double *);
 		void BackPropagate(double *);
 		void UpdateWeights(double *);
 		
-		double * GetOutputs(void) const;
+		void GetOutputs(double* &) const;
 
 
 		NeuronsLayer * * Layers_ = NULL;
 	private:
 		int layersCount_ = 0;
+
+		void PrintArray(double * const arr, int size)
+		{
+			std::cout << "[ " << arr[0];
+			for (int i = 1; i < size; i++)
+				std::cout << ", " << arr[i];
+			std::cout << "]";
+		}
 	};
 
 }
